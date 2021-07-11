@@ -43,9 +43,9 @@ class ParseNIK {
             ? `20${nikYear > 10 ? nikYear : '0' + nikYear.toString()}`
             : `19${nikYear > 10 ? nikYear : '0' + nikYear.toString()}`;
     }
-    private getMonthFull(){
+    private getMonthFull() {
         let date = this.parseNIK(8, 2)
-        return date > 10? String(date): `0${date}`
+        return date > 10 ? String(date) : `0${date}`
     }
     private getNIKDate() {
         return this.parseNIK(6, 2);
@@ -60,7 +60,7 @@ class ParseNIK {
     private getGender() {
         return this.getNIKDate() > 40 ? "PEREMPUAN" : "LAKI-LAKI"
     }
-    
+
     private getDateString() {
         return DateTime.fromFormat(`${this.date}/${this.month}/${this.year}`, 'dd/MM/yyyy')
     }
@@ -68,9 +68,9 @@ class ParseNIK {
     private getUniqueCode() {
         return String(this.NIK.substr(12, 4));
     }
-    parse(): NikResult | NikResultInvalid {
+    parse(): NikResult | NikResultInvalid | Boolean {
         if (!this.validate())
-            throw new Error('NIK Invalid')
+            return false
 
         return {
             provinsi: this.provinsi,
