@@ -10,12 +10,16 @@
   "scripts": {
     "build": "del build && tsc",
     "prepare": "npm run build",
-    "test": "jest"
+    "test": "jest",
+    "release": "np"
   },
   "author": "Riko Efendi",
   "license": "ISC",
   "dependencies": {
     "luxon": "^1.28.0"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.24",
@@ -26,7 +30,19 @@
     "fs-async": "0.0.1",
     "jest": "^27.0.6",
     "nik-parser": "^1.0.1",
+    "np": "^7.5.0",
     "ts-jest": "^27.0.3",
     "typescript": "^4.3.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rikoefendi/NikValidator.git"
+  },
+  "keywords": [
+    "title-case",
+    "converter"
+  ],
+  "bugs": {
+    "url": "https://github.com/rikoefendi/NikValidator/issues"
   }
 }
