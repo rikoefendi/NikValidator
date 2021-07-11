@@ -5,16 +5,26 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "removeComments": false,
-    "target": "es2020", 
+    "target": "es2015",
     "outDir": "build",
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2015",
+      "dom",
+      "esnext"
+    ],
     "rootDir": "./src",
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "build", "tests"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "tests"
+  ]
 }

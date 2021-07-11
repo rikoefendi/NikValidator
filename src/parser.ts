@@ -1,7 +1,6 @@
 import { findById, KecamatanContract } from './address'
 import { DateTime } from 'luxon'
 export type NikResult = {
-    isValid: Boolean,
     provinsi: String,
     kota: String,
     kecamatan: String,
@@ -71,12 +70,9 @@ class ParseNIK {
     }
     parse(): NikResult | NikResultInvalid {
         if (!this.validate())
-            return {
-                isValid: false
-            }
+            throw new Error('NIK Invalid')
 
         return {
-            isValid: this.validate() ? true : false,
             provinsi: this.provinsi,
             kota: this.kota,
             kecamatan: this.kecamatan.name,
@@ -95,5 +91,5 @@ class ParseNIK {
 
 export function parseNIK(nik) {
     if (typeof nik == 'number') nik = String(nik)
-    return new ParseNIK(nik)
+    return new ParseNIK(nik).parse()
 }
