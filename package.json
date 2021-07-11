@@ -2,8 +2,8 @@
   "name": "nik-validate",
   "version": "1.0.4",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "files": [
     "dist"
   ],

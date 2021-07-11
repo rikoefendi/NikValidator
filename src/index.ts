@@ -1,2 +1,2 @@
-export * as Address from './address'
-export * as Parser from './parser'
+export * from './address'
+export * from './parser'
