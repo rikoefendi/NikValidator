@@ -1,0 +1,32 @@
+{
+  "name": "nik-validator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "del build && tsc",
+    "prepare": "npm run build",
+    "test": "jest"
+  },
+  "author": "Riko Efendi",
+  "license": "ISC",
+  "dependencies": {
+    "luxon": "^1.28.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "@types/luxon": "^1.27.1",
+    "@types/node": "^16.3.1",
+    "del-cli": "^4.0.0",
+    "fs": "0.0.1-security",
+    "fs-async": "0.0.1",
+    "jest": "^27.0.6",
+    "nik-parser": "^1.0.1",
+    "ts-jest": "^27.0.3",
+    "typescript": "^4.3.5"
+  }
+}
