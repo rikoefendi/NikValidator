@@ -25,18 +25,32 @@ type PartNik = {
     'uniqcode': [number, number]
 }
 
-class ParseNIK {
+export interface NIKResult {
+    NIK: String
+    provinsi: String
+    kota: String
+    kecamatan: String
+    kodepos: number | null
+    tgl_lahir: String | boolean
+    gender: String
+    unicode: String
+    address_id: number
+}
+
+export class ParseNIK {
     private date: String
     private month: String
     private year: String
-    public lahir: String | Boolean
-    public gender: String
-    public umur: String
-    public provinsi: ProvinsiContract
-    public kota: KotaContract
-    public kecamatan: KecamatanContract
-    public uniqcode: String
-    constructor(public NIK: string) {
+    private lahir: String | boolean
+    private gender: String
+    private provinsi: ProvinsiContract
+    private kota: KotaContract
+    private kecamatan: KecamatanContract
+    private uniqcode: String
+    private NIK: String
+    constructor(nik: String) {
+        if (typeof nik === 'number') nik = String(nik)
+        this.NIK = nik
         let { date, gender } = this.getDateAndGender()
         this.month = this.normalizeZero(this.getPartNIK('month'))
         this.year = this.normalizeYear();
@@ -86,7 +100,7 @@ class ParseNIK {
     private normalizeZero(number: Number): String {
         return number > 10 ? number.toString() : `0${number}`
     }
-    private getBirthDay() {
+    private getBirthDay(): String | boolean {
         const month = Number(this.month) - 1
         if (Number(this.date) > 31 || month > 11) return false
         return `${this.date} ${monthNames[month]} ${this.year}`
@@ -107,13 +121,13 @@ class ParseNIK {
         }
         return code
     }
-    private validate() {
+    isValid() {
         return this.NIK.length === 16 && !!this.provinsi && !!this.kota && !!this.kecamatan && !!this.lahir
     }
 
-    public parse() {
-        if (!this.validate()) return false
+    parse(): NIKResult {
         return {
+            NIK: this.NIK,
             provinsi: this.provinsi.name,
             kota: this.kota.name,
             kecamatan: this.kecamatan.name,
@@ -125,9 +139,4 @@ class ParseNIK {
         }
     }
 
-}
-
-export function parseNIK(nik) {
-    if (typeof nik == 'number') nik = String(nik)
-    return new ParseNIK(nik).parse()
 }

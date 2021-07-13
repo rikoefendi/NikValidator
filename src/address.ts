@@ -37,12 +37,14 @@ export const flattenAddress = () => {
     return ArrayMap(Address.kecamatan, k => {
         const kabkotLabel = findById('kota', k.kota_id)
         const provinsiLabel = findById('provinsi', k.provinsi_id)
+        let label = `${k.name.trim()}, ${kabkotLabel.name}, ${provinsiLabel.name}`
+        if(k.postal_code) label += `, ${k.postal_code}`
         return {
             provinsi: provinsiLabel.name,
             kota: kabkotLabel.name,
             kecamatan: k.name,
             postal_code: k.postal_code,
-            label: `${k.name}, ${kabkotLabel.name}, ${provinsiLabel.name}, ${k.postal_code}`,
+            label,
             id: k.id
         }
     })
