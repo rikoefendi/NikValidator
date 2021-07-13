@@ -1,92 +1,130 @@
-import { findById, KecamatanContract } from './address'
-import { DateTime } from 'luxon'
-export type NikResult = {
-    provinsi: String,
-    kota: String,
-    kecamatan: String,
-    kodepos: String | null,
-    kelamin: String,
-    lahir: String,
-    umur: Number,
-    uniqcode: String,
+import { AddressContract, findById, KecamatanContract, KotaContract, ProvinsiContract } from './address'
+const monthNames = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember'
+]
+type ValueOf<T> = T[keyof T]
+
+type PartNik = {
+    'provinsi': [number, number],
+    'kota': [number, number],
+    'kecamatan': [number, number],
+    'date': [number, number],
+    'month': [number, number],
+    'year': [number, number],
+    'uniqcode': [number, number]
 }
-export type NikResultInvalid = {
-    isValid: Boolean
-}
+
 class ParseNIK {
     private date: String
     private month: String
     private year: String
-    private gender: String
-    private provinsi: String
-    private kota: String
-    private kecamatan: KecamatanContract
+    public lahir: String | Boolean
+    public gender: String
+    public umur: String
+    public provinsi: ProvinsiContract
+    public kota: KotaContract
+    public kecamatan: KecamatanContract
+    public uniqcode: String
     constructor(public NIK: string) {
-        this.provinsi = findById('provinsi', this.parseNIK(0, 2)).name
-        this.kota = findById('kota', this.parseNIK(0, 4)).name
-        this.kecamatan = findById('kecamatan', this.parseNIK(0, 6))
-        this.date = this.getDateFull();
-        this.gender = this.getGender()
-        this.month = this.getMonthFull()
-        this.year = this.getYearFull();
+        let { date, gender } = this.getDateAndGender()
+        this.month = this.normalizeZero(this.getPartNIK('month'))
+        this.year = this.normalizeYear();
+        this.date = date;
+
+
+        this.provinsi = this.getArea('provinsi') as ProvinsiContract
+        this.kota = this.getArea('kota') as KotaContract
+        this.kecamatan = this.getArea('kecamatan') as KecamatanContract
+        this.lahir = this.getBirthDay()
+        this.gender = gender
+        this.uniqcode = this.getUniqCode()
     }
-    private parseNIK(start: number, end: number) {
-        return parseInt(this.NIK.substr(start, end))
+
+    private getPartNIK(part: keyof PartNik): number {
+        const partNIK: PartNik = {
+            'provinsi': [0, 2],
+            'kota': [0, 4],
+            'kecamatan': [0, 6],
+            'date': [6, 8],
+            'month': [8, 10],
+            'year': [10, 12],
+            'uniqcode': [12, 16]
+        }
+        const NIK = this.NIK
+        const order: ValueOf<PartNik> = partNIK[part]
+        return Number(NIK.substring(order[0], order[1]))
+    }
+    private getArea(area: keyof AddressContract) {
+        return findById(area, this.getPartNIK(area))
     }
     private getCurrentYear() {
-        return parseInt(new Date().getFullYear().toString().substr(-2));
+        return new Date().getFullYear();
     }
-    private getYearFull() {
-        const nikYear = this.parseNIK(10, 2)
-        const currentYear = this.getCurrentYear()
+
+    private getDateAndGender() {
+        let date = this.getPartNIK('date')
+
+        let gender = 'LAKI-LAKI'
+        if (date > 40) {
+            gender = 'PEREMPUAN'
+            date -= 40
+        }
+
+        return { date: this.normalizeZero(date), gender }
+    }
+    private normalizeZero(number: Number): String {
+        return number > 10 ? number.toString() : `0${number}`
+    }
+    private getBirthDay() {
+        const month = Number(this.month) - 1
+        if (Number(this.date) > 31 || month > 11 || Number(this.year) > this.getCurrentYear()) return false
+        return `${this.date} ${monthNames[month]} ${this.year}`
+    }
+    private normalizeYear() {
+        const nikYear = this.getPartNIK('year')
+        const currentYear = parseInt(this.getCurrentYear().toString().substr(-2))
         return nikYear < currentYear
             ? `20${nikYear > 10 ? nikYear : '0' + nikYear.toString()}`
             : `19${nikYear > 10 ? nikYear : '0' + nikYear.toString()}`;
     }
-    private getMonthFull() {
-        let date = this.parseNIK(8, 2)
-        return date > 10 ? String(date) : `0${date}`
-    }
-    private getNIKDate() {
-        return this.parseNIK(6, 2);
-    }
-    private getDateFull() {
-        let date = this.getNIKDate();
-        if (date > 40) {
-            date -= 40;
+    private getUniqCode() {
+        let code = this.getPartNIK('uniqcode').toString()
+        if (code.length >= 4) return code
+        const length = 4 - code.length
+        for (let i = 0; i < length; i++) {
+            code += '0'
         }
-        return date > 10 ? date.toString() : `0${date}`;
+        return code.split("").reverse().join("")
     }
-    private getGender() {
-        return this.getNIKDate() > 40 ? "PEREMPUAN" : "LAKI-LAKI"
+    private validate() {
+        return this.NIK.length === 16 && !!this.provinsi && !!this.kota && !!this.kecamatan && !!this.lahir
     }
 
-    private getDateString() {
-        return DateTime.fromFormat(`${this.date}/${this.month}/${this.year}`, 'dd/MM/yyyy')
-    }
-    //Get unique code in NIK
-    private getUniqueCode() {
-        return String(this.NIK.substr(12, 4));
-    }
-    parse(): NikResult | NikResultInvalid | Boolean {
-        if (!this.validate())
-            return false
-
+    public parse() {
+        if (!this.validate()) return false
         return {
-            provinsi: this.provinsi,
-            kota: this.kota,
+            provinsi: this.provinsi.name,
+            kota: this.kota.name,
             kecamatan: this.kecamatan.name,
-            kodepos: String(this.kecamatan.postal_code),
-            kelamin: this.gender,
-            lahir: this.getDateString().toFormat('dd MMMM yyyy', { locale: 'id-ID' }),
-            umur: Math.abs(Math.trunc(this.getDateString().diffNow('years').years)),
-            uniqcode: this.getUniqueCode(),
+            kodepos: this.kecamatan.postal_code,
+            tgl_lahir: this.lahir,
+            gender: this.gender,
+            unicode: this.uniqcode,
+            address_id: this.kecamatan.id
         }
     }
 
-    validate() {
-        return this.NIK.length === 16 && !!this.provinsi && !!this.kota && !!this.kecamatan.name
-    }
 }
 
 export function parseNIK(nik) {

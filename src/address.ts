@@ -1,5 +1,6 @@
 import { provinsi, kota, kecamatan } from './assets/wilayah.json'
-
+import ArrayMap from 'lodash.map'
+import ArrayFilter from 'lodash.filter'
 export type ProvinsiContract = {
     id: number
     name: String
@@ -23,31 +24,19 @@ export type AddressContract = {
     kecamatan: KecamatanContract[],
 }
 
-export interface AutocompleteContract {
-    label: String,
-    provinsi: String,
-    kota: String,
-    kecamatan: String,
-    id: Number,
-    postal_code: Number | null
-}
-
 export const Address: AddressContract = {
     provinsi, kota, kecamatan
 }
-
-export function findById(type: 'kecamatan', id: Number): KecamatanContract
-export function findById(type: 'kota', id: Number): KotaContract
-export function findById(type: 'provinsi', id: Number): ProvinsiContract
-export function findById(type: any, id: Number): any {
-    return Address[type].filter(ad => ad.id == id)[0]
+export function findById<T extends keyof AddressContract>(type: T, id: Number): KecamatanContract | KotaContract | ProvinsiContract
+export function findById(type: any, id: any): any {
+    return ArrayFilter(Address[type], (value) => value.id == id)[0]
 }
 
 
 export const flattenAddress = () => {
-    return Address.kecamatan.map(k => {
-        const kabkotLabel = kota.filter(kt => kt.id == k.kota_id)[0]
-        const provinsiLabel = provinsi.filter(pro => pro.id == k.provinsi_id)[0]
+    return ArrayMap(Address.kecamatan, k => {
+        const kabkotLabel = findById('kota', k.kota_id)
+        const provinsiLabel = findById('provinsi', k.provinsi_id)
         return {
             provinsi: provinsiLabel.name,
             kota: kabkotLabel.name,
