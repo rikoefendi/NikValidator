@@ -69,7 +69,7 @@ class ParseNIK {
         return findById(area, this.getPartNIK(area))
     }
     private getCurrentYear() {
-        return new Date().getFullYear();
+        return parseInt(new Date().getFullYear().toString().substr(-2));
     }
 
     private getDateAndGender() {
@@ -88,12 +88,12 @@ class ParseNIK {
     }
     private getBirthDay() {
         const month = Number(this.month) - 1
-        if (Number(this.date) > 31 || month > 11 || Number(this.year) > this.getCurrentYear()) return false
+        if (Number(this.date) > 31 || month > 11) return false
         return `${this.date} ${monthNames[month]} ${this.year}`
     }
     private normalizeYear() {
         const nikYear = this.getPartNIK('year')
-        const currentYear = parseInt(this.getCurrentYear().toString().substr(-2))
+        const currentYear = this.getCurrentYear()
         return nikYear < currentYear
             ? `20${nikYear > 10 ? nikYear : '0' + nikYear.toString()}`
             : `19${nikYear > 10 ? nikYear : '0' + nikYear.toString()}`;
@@ -103,9 +103,9 @@ class ParseNIK {
         if (code.length >= 4) return code
         const length = 4 - code.length
         for (let i = 0; i < length; i++) {
-            code += '0'
+            code = 0 + code
         }
-        return code.split("").reverse().join("")
+        return code
     }
     private validate() {
         return this.NIK.length === 16 && !!this.provinsi && !!this.kota && !!this.kecamatan && !!this.lahir
