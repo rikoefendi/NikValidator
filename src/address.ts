@@ -1,48 +1,48 @@
-import { provinsi, kota, kecamatan } from './assets/wilayah.json'
+import {provinces, cities, districts} from './assets/location.json'
 import ArrayMap from 'lodash.map'
 import ArrayFilter from 'lodash.filter'
-export type ProvinsiContract = {
+export type ProvinceContract = {
     id: number
     name: String
 }
-export type KotaContract = {
+export type CityContract = {
     id: number
-    provinsi_id: ProvinsiContract['id']
+    province_id: ProvinceContract['id']
     name: String
 }
-export type KecamatanContract = {
+export type DistrictContract = {
     id: number,
-    provinsi_id: ProvinsiContract['id']
-    kota_id: KotaContract['id'],
+    province_id: ProvinceContract['id']
+    city_id: CityContract['id'],
     postal_code: number | null,
     name: String
 }
 
 export type AddressContract = {
-    provinsi: ProvinsiContract[],
-    kota: KotaContract[],
-    kecamatan: KecamatanContract[],
+    provinces: ProvinceContract[],
+    cities: CityContract[],
+    districts: DistrictContract[],
+}
+export const Address: AddressContract = {
+    provinces, cities, districts
 }
 
-export const Address: AddressContract = {
-    provinsi, kota, kecamatan
-}
-export function findById<T extends keyof AddressContract>(type: T, id: Number): KecamatanContract | KotaContract | ProvinsiContract
+export function findById<T extends keyof AddressContract>(type: T, id: Number): DistrictContract | CityContract | ProvinceContract
 export function findById(type: any, id: any): any {
     return ArrayFilter(Address[type], (value) => value.id == id)[0]
 }
 
 
 export const flattenAddress = () => {
-    return ArrayMap(Address.kecamatan, k => {
-        const kabkotLabel = findById('kota', k.kota_id)
-        const provinsiLabel = findById('provinsi', k.provinsi_id)
-        let label = `${k.name.trim()}, ${kabkotLabel.name}, ${provinsiLabel.name}`
-        if(k.postal_code) label += `, ${k.postal_code}`
+    return ArrayMap(districts, k => {
+        const kabkotLabel = findById('cities', k.city_id)
+        const provinceLabel = findById('provinces', k.province_id)
+        let label = `${k.name.trim()}, ${kabkotLabel.name}, ${provinceLabel.name}`
+        if (k.postal_code) label += `, ${k.postal_code}`
         return {
-            provinsi: provinsiLabel.name,
-            kota: kabkotLabel.name,
-            kecamatan: k.name,
+            province: provinceLabel.name,
+            city: kabkotLabel.name,
+            district: k.name,
             postal_code: k.postal_code,
             label,
             id: k.id

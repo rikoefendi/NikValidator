@@ -1,4 +1,4 @@
-import { AddressContract, findById, KecamatanContract, KotaContract, ProvinsiContract } from './address'
+import { findById, DistrictContract, CityContract, ProvinceContract } from './address'
 const monthNames = [
     'Januari',
     'Februari',
@@ -16,9 +16,9 @@ const monthNames = [
 type ValueOf<T> = T[keyof T]
 
 type PartNik = {
-    'provinsi': [number, number],
-    'kota': [number, number],
-    'kecamatan': [number, number],
+    'province': [number, number],
+    'city': [number, number],
+    'district': [number, number],
     'date': [number, number],
     'month': [number, number],
     'year': [number, number],
@@ -27,14 +27,13 @@ type PartNik = {
 
 export interface NIKResult {
     NIK: String
-    provinsi: String
-    kota: String
-    kecamatan: String
-    kodepos: number | null
-    tgl_lahir: String | boolean
+    province: ProvinceContract,
+    city: CityContract,
+    district: DistrictContract
+    birthday: String | boolean
     gender: String
     unicode: String
-    address_id: number
+    name: string | undefined
 }
 
 export class ParseNIK {
@@ -43,12 +42,12 @@ export class ParseNIK {
     private year: String
     private lahir: String | boolean
     private gender: String
-    private provinsi: ProvinsiContract
-    private kota: KotaContract
-    private kecamatan: KecamatanContract
+    private province: ProvinceContract
+    private city: CityContract
+    private district: DistrictContract
     private uniqcode: String
     private NIK: String
-    constructor(nik: String) {
+    constructor(nik: String, public name?: string) {
         if (typeof nik === 'number') nik = String(nik)
         this.NIK = nik
         let { date, gender } = this.getDateAndGender()
@@ -57,9 +56,9 @@ export class ParseNIK {
         this.date = date;
 
 
-        this.provinsi = this.getArea('provinsi') as ProvinsiContract
-        this.kota = this.getArea('kota') as KotaContract
-        this.kecamatan = this.getArea('kecamatan') as KecamatanContract
+        this.province = this.getArea('province') as ProvinceContract
+        this.city = this.getArea('city') as CityContract
+        this.district = this.getArea('district') as DistrictContract
         this.lahir = this.getBirthDay()
         this.gender = gender
         this.uniqcode = this.getUniqCode()
@@ -67,9 +66,9 @@ export class ParseNIK {
 
     private getPartNIK(part: keyof PartNik): number {
         const partNIK: PartNik = {
-            'provinsi': [0, 2],
-            'kota': [0, 4],
-            'kecamatan': [0, 6],
+            'province': [0, 2],
+            'city': [0, 4],
+            'district': [0, 6],
             'date': [6, 8],
             'month': [8, 10],
             'year': [10, 12],
@@ -79,8 +78,9 @@ export class ParseNIK {
         const order: ValueOf<PartNik> = partNIK[part]
         return Number(NIK.substring(order[0], order[1]))
     }
-    private getArea(area: keyof AddressContract) {
-        return findById(area, this.getPartNIK(area))
+    private getArea(area) {
+        const areas = { 'province': 'provinces', 'city': 'cities', 'district': 'districts' }
+        return findById(areas[area], this.getPartNIK(area))
     }
     private getCurrentYear() {
         return parseInt(new Date().getFullYear().toString().substr(-2));
@@ -122,20 +122,19 @@ export class ParseNIK {
         return code
     }
     isValid() {
-        return this.NIK.length === 16 && !!this.provinsi && !!this.kota && !!this.kecamatan && !!this.lahir
+        return this.NIK.length === 16 && !!this.province && !!this.city && !!this.district && !!this.lahir
     }
 
     parse(): NIKResult {
         return {
             NIK: this.NIK,
-            provinsi: this.provinsi.name,
-            kota: this.kota.name,
-            kecamatan: this.kecamatan.name,
-            kodepos: this.kecamatan.postal_code,
-            tgl_lahir: this.lahir,
+            province: this.province,
+            city: this.city,
+            district: this.district,
+            birthday: this.lahir,
             gender: this.gender,
             unicode: this.uniqcode,
-            address_id: this.kecamatan.id
+            name: this.name
         }
     }
 
